@@ -82,13 +82,3 @@ Ensure you have the following installed:
    streamlit run app.py
    ```
 
-## Demo Video
-https://youtu.be/wYLyWq4Gubc
-
-## 📬 Contact
-For any inquiries, reach out via:
-- harshdeepvj111@gmail.com
-- sharmakuhu8042@gmail.com
-- prachikansal03@gmail.com
-
-
