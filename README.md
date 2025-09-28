@@ -1,12 +1,12 @@
-# FinFriend - Your AI-Powered Financial Assistant
+# MoneyMentor - Your AI-Powered Financial Assistant
 
 ## 📌 Overview
-FinFriend is an AI-powered financial assistant designed to enhance financial literacy and improve investment decisions among users. By integrating various tools and resources, FinFriend simplifies complex financial concepts, making them accessible and actionable for users at all levels of financial expertise.
+MoneyMentor is an AI-powered financial assistant designed to enhance financial literacy and improve investment decisions among users. By integrating various tools and resources, MoneyMentor simplifies complex financial concepts, making them accessible and actionable for users at all levels of financial expertise.
 
 ## 📖 Table of Contents
 1. [Overview](#-overview)
 2. [Problem Resolution](#-problem-resolution)
-3. [How Does FinFriend Solve These Problems?](#-how-does-finfriend-solve-these-problems)
+3. [How Does MoneyMentor Solve These Problems?](#-how-does-MoneyMentor-solve-these-problems)
    - [Interactive Learning](#-interactive-learning)
    - [Personalized Recommendations](#-personalized-recommendations)
    - [Real-Time Information](#-real-time-information)
@@ -19,14 +19,14 @@ FinFriend is an AI-powered financial assistant designed to enhance financial lit
 8. [Contact](#-contact)
 
 ## 🚀 Problem Resolution
-FinFriend addresses key challenges in financial literacy and investing:
+MoneyMentor addresses key challenges in financial literacy and investing:
 - **Bridging the financial literacy gap** with accessible investment knowledge.
 - **AI-driven guidance** for scalable and personalized financial advice.
 - **Simplifying investing** for both beginners and experienced users.
 - **Detecting fraud risks** to protect investors from scams.
 - **Empowering users** with educational resources and market updates.
 
-## 💡 How Does FinFriend Solve These Problems?
+## 💡 How Does MoneyMentor Solve These Problems?
 ### 🔹 Interactive Learning
 Engages users with **quizzes, lessons, and a finance dictionary**, making financial education engaging and easy to understand.
 
@@ -81,4 +81,5 @@ Ensure you have the following installed:
    ```bash
    streamlit run app.py
    ```
+
 
