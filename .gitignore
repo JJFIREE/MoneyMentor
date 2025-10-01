@@ -1,6 +1,7 @@
 __pycache__
 .streamlit
 .venv
+.env
 .vscode
 firebase-key.json
 projenv
