@@ -584,4 +584,3 @@ def create_user_profile_in_firestore(user_id, email):
         print("[create_user_profile_in_firestore] Warning: Firestore write timed out, but account creation succeeded")
     except Exception as e:
         print(f"[create_user_profile_in_firestore] Exception: {e}")
-        
