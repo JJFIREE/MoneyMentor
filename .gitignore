@@ -5,3 +5,5 @@ __pycache__
 .vscode
 firebase-key.json
 projenv
+.streamlit/secrets.toml
+venv/
