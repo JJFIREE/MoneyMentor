@@ -40,7 +40,6 @@ dotenv==0.9.9
 entrypoints==0.4
 etelemetry==0.3.1
 exceptiongroup==1.2.2
-faiss-cpu
 executing==2.2.0
 faiss-cpu==1.10.0
 Faker==37.1.0
@@ -137,7 +136,6 @@ numexpr==2.10.1
 numpy==2.0.1
 openai==1.68.2
 orjson==3.10.15
-openai
 packaging==24.2
 pandas==2.2.3
 parso==0.8.4
