@@ -37,7 +37,7 @@ from langchain_core.runnables import (
     RunnableLambda,
     RunnableBranch
 )
-from langchain.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate
 from langchain.schema.output_parser import StrOutputParser
 from langchain_core.tools import tool, StructuredTool
 from langchain_core import tools
@@ -143,26 +143,32 @@ class LLMShim:
                 temperature=temperature,
                 stream=False
             )
-            # Response structure from SDK: resp.choices[0].message.content
+
+            # ALWAYS correct for Groq:
+            # resp.choices[0].message.content
             content = ""
             if hasattr(resp, "choices") and resp.choices:
-                # Some SDK versions store message as dict, others as object
                 choice = resp.choices[0]
-                if isinstance(choice.message, dict):
+
+                # If message is object → normal
+                if hasattr(choice.message, "content"):
+                    content = choice.message.content
+
+                # If message is dict → fallback
+                elif isinstance(choice.message, dict):
                     content = choice.message.get("content", "")
+
                 else:
-                    # choice.message may be something like {"role":"assistant","content": "..."}
-                    try:
-                        content = choice.message["content"]
-                    except Exception:
-                        # fallback to string
-                        content = str(choice)
+                    content = str(choice)
+
             else:
                 content = str(resp)
+
             return LLMShimResponse(content=content)
+
         except Exception as e:
-            # bubble a clean error
             raise RuntimeError(f"Groq SDK error: {e}")
+
 
     def predict(self, prompt: str):
         return self.invoke(prompt).content
@@ -1243,27 +1249,37 @@ def update_router():
 # FinancialChatBot class (keeps behaviour)
 # ---------------------------
 class FinancialChatBot:
-    def __init__(self, language = 'english'):
+    def __init__(self, language='english'):
         self.conversation_history = []
         self.model = update_router()
         self.context_messages = []
         self.language = language
 
+    # -----------------------------
+    # Message formatting helpers
+    # -----------------------------
     def _format_bot_message(self, content: str) -> str:
         return f"🤖 Assistant: {content}"
 
     def _format_user_message(self, content: str) -> str:
         return f"👤 User: {content}"
 
+    # -----------------------------
+    # Context memory
+    # -----------------------------
     def _update_context(self, user_input: str, bot_response: str):
         self.context_messages.append(HumanMessage(content=user_input))
         self.context_messages.append(AIMessage(content=bot_response))
         if len(self.context_messages) > 10:
             self.context_messages = self.context_messages[-10:]
 
+    # -----------------------------
+    # Contextual enhancer
+    # -----------------------------
     def _process_with_context(self, user_input: str):
         if not self.context_messages:
             return user_input
+
         context_system_prompt = """
         You are a financial assistant analyzing a conversation history.
         Given the conversation history and a new user query, your task is to:
@@ -1271,61 +1287,134 @@ class FinancialChatBot:
         2. Generate an enhanced version of the user's query that incorporates relevant context
         3. Return ONLY the enhanced query without any explanations
         """
+
         context_prompt = "Conversation history:\n"
         for msg in self.context_messages[-6:]:
             role = "User" if isinstance(msg, HumanMessage) else "Assistant"
             context_prompt += f"{role}: {msg.content}\n\n"
+
         context_prompt += f"New user query: {user_input}\n\nGenerate an enhanced query:"
+
         try:
-            messages = [SystemMessage(content=context_system_prompt), HumanMessage(content=context_prompt)]
+            messages = [
+                SystemMessage(content=context_system_prompt),
+                HumanMessage(content=context_prompt),
+            ]
             enhanced_query = llm.invoke(messages).content.strip()
             return enhanced_query
         except Exception:
             return user_input
 
+    # -----------------------------
+    # Main chat handler
+    # -----------------------------
     def chat(self, user_input: str, image_path: str = None) -> dict:
+
+        # Log user message
         self.conversation_history.append(self._format_user_message(user_input))
-        contextualized_input = user_input
-        if self.context_messages and not image_path:
-            contextualized_input = self._process_with_context(user_input)
+
+        # Apply context enhancer (if no image)
+        contextualized_input = (
+            self._process_with_context(user_input)
+            if self.context_messages and not image_path
+            else user_input
+        )
+
+        # Prepare state
         image_list = [image_path] if image_path else []
         initial_state = create_initial_state(contextualized_input, image_list)
+
         if self.context_messages:
-            initial_state["messages"] = self.context_messages + [HumanMessage(content=contextualized_input)]
+            initial_state["messages"] = self.context_messages + [
+                HumanMessage(content=contextualized_input)
+            ]
+
+        # -----------------------------
+        # Model execution
+        # -----------------------------
         try:
             response = self.model.invoke(initial_state)
-            # model.invoke returns dict-like state updates per StateGraph compiled behaviour
-            text_response = response.get('running_summary', '') if isinstance(response, dict) else (getattr(response, 'content', '') or "")
-            plot_json = response.get('plot_json') if isinstance(response, dict) else None
-            if not text_response and response.get('messages'):
-                text_response = response['messages'][-1].content
-            # optional translation using SUTRA if configured
-            try:
-                sutra_key = st.secrets.REST.SUTRA_API_KEY
-            except Exception:
-                sutra_key = os.environ.get("SUTRA_API_KEY")
-            self._update_context(user_input, text_response)
-            formatted_response = self._format_bot_message(text_response)
-            self.conversation_history.append(formatted_response)
-            if self.language != "english" and sutra_key:
-                url = 'https://api.two.ai/v2';
-                client = OpenAI(base_url=url, api_key=sutra_key)
-                stream = client.chat.completions.create(model='sutra-v2',
-                                                    messages = [{"role": "user", "content": "Translate this text in " + self.language + ": " + text_response}],
-                                                    max_tokens=1024, temperature=0, stream=False)
-                return {"text": stream.choices[0].message.content, "plot": plot_json}
-            return {"text": text_response, "plot": plot_json}
-        except Exception as e:
-            error_message = f"I apologize, but I encountered an error: {str(e)}"
-            self.conversation_history.append(self._format_bot_message(error_message))
-            return {"text": error_message, "plot": None}
 
+            # Safe extraction of output
+            if isinstance(response, dict):
+                text_response = response.get("running_summary", "") or ""
+                plot_json = response.get("plot_json", None)
+
+                if not text_response and response.get("messages"):
+                    text_response = response["messages"][-1].content
+
+            elif hasattr(response, "message"):
+                text_response = response.message.content
+                plot_json = None
+
+            elif isinstance(response, list) and len(response) > 0 and hasattr(response[0], "message"):
+                text_response = response[0].message.content
+                plot_json = None
+
+            else:
+                text_response = str(response)
+                plot_json = None
+
+        except Exception as e:
+            text_response = f"I apologize, but I encountered an error while processing your request: {str(e)}"
+            plot_json = None
+
+        # -----------------------------
+        # Translation (Sutra)
+        # -----------------------------
+        try:
+            sutra_key = st.secrets.REST.SUTRA_API_KEY
+        except Exception:
+            sutra_key = os.environ.get("SUTRA_API_KEY")
+
+        # Update memory
+        self._update_context(user_input, text_response)
+
+        # Log bot message
+        self.conversation_history.append(self._format_bot_message(text_response))
+
+        # Translate if required
+        if self.language != "english" and sutra_key:
+            client = OpenAI(base_url="https://api.two.ai/v2", api_key=sutra_key)
+            stream = client.chat.completions.create(
+                model="sutra-v2",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": f"Translate this text in {self.language}: {text_response}",
+                    }
+                ],
+                max_tokens=1024,
+                temperature=0,
+                stream=False,
+            )
+            choice = stream.choices[0]
+
+            # Works for object (most cases)
+            if hasattr(choice.message, "content"):
+                translated_text = choice.message.content
+
+            # Works for dict fallback
+            elif isinstance(choice.message, dict):
+                translated_text = choice.message.get("content", "")
+
+            else:
+                translated_text = str(choice)
+
+            return {"text": translated_text, "plot": plot_json}
+
+        return {"text": text_response, "plot": plot_json}
+
+    # -----------------------------
+    # History management
+    # -----------------------------
     def get_conversation_history(self) -> str:
         return "\n\n".join(self.conversation_history)
 
     def clear_history(self):
         self.conversation_history = []
         self.context_messages = []
+
 
 # ---------------------------
 # Optional command-line main (keeps behavior)
