@@ -19,6 +19,7 @@ css_styles="""
     }
     button:hover {
         background-color: #839E65;
+        color: white;
     }
     
     .floating-box-container {
@@ -101,13 +102,13 @@ css_styles="""
     }
 
     .card-container {
-        gap: 30px;
-        justify-items: center;
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        display: flex;
+        justify-content: space-between; /* equal spacing between cards */
+        align-items: center;
+        gap: 20px;
         padding: 20px;
-        max-width: 1200px;
         margin: auto;
+        flex-wrap: wrap; /* wrap to next line on small screens */
     }
 
     .card{
@@ -117,6 +118,7 @@ css_styles="""
         text-align: center;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         transition: all 0.3s ease-in-out;
+        margin: auto;
     }
 
     .card:hover {
@@ -152,17 +154,18 @@ css_styles="""
     }
     .card button:hover {
         background: #6F8A50;
+        color: white;
     }
 """
 
 
 features = [
-    ("📊", "Financial Advisor", "Get personalized financial advice."),
-    ("📚", "Lessons", "Enhance your financial knowledge."),
-    ("🛡️", "Finance Toolkit", "Your toolkit for smart decisions."),
-    ("📝", "Finance Quiz", "Test your financial knowledge."),
+    # ("📊", "Financial Advisor", "Get personalized financial advice."),
+    # ("📚", "Lessons", "Enhance your financial knowledge."),
+    # ("🛡️", "Finance Toolkit", "Your toolkit for smart decisions."),
+    # ("📝", "Finance Quiz", "Test your financial knowledge."),
     ("📰", "Finance News", "Stay updated on financial news."),
-    ("📖", "Finance Dictionary", "Easily look up financial terms."),
+    # ("📖", "Finance Dictionary", "Easily look up financial terms."),
     ("🤖", "AI Chatbot", "Chat with our AI financial assistant."),
     ("💰", "Stock Analysis", "Monitor and analyze your savings."),
 ]
@@ -185,7 +188,7 @@ if 'user_info' not in st.session_state:
             if st.button(" 🚀 Get Started", use_container_width=True, type='primary'):
                 st.switch_page("user_options/login_pg.py")
 
-    cols = st.columns(4)
+    cols = st.columns(3)
 
     
     with stylable_container("card_container", css_styles):
@@ -232,9 +235,9 @@ with cols[1]:
     st.markdown("")
     st.markdown("")
     st.markdown("")
-    st.markdown("<h1 style='text-align: right; font-size: 70px; font-weight: bold;'>WELCOME TO MONEYMENTOR</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; font-size: 50px; font-weight: bold;'>WELCOME TO MONEYMENTOR</h1>", unsafe_allow_html=True)
     st.markdown("""
-    <div style="text-align: right; margin-top: 20px;">
+    <div style="text-align: center; margin-top: 20px;">
         <p>Discover tools, resources, and advice to make informed financial decisions. Explore personalized financial advice, track savings, detect fraud schemes, and much more.</p>
     </div>
     """, unsafe_allow_html=True)
@@ -249,7 +252,7 @@ st.markdown("")
 
 user_input = st.text_input("🔍 Ask us anything:", placeholder="What is the best long term investment...")
 
-cols = st.columns([1,10])
+cols = st.columns([1,5])
 # Store user input in session state
 with cols[0]:
     if st.button("Search"):
@@ -277,18 +280,18 @@ with cols[0]:
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Features Grid ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 st.markdown("") 
-st.markdown("<h2 style='text-align: center; font-size: 50px; '>Explore Our Features</h2>", unsafe_allow_html=True)
+st.markdown("<h2 style='text-align: center; font-size: 40px; '>Explore Our Features</h2>", unsafe_allow_html=True)
 st.markdown("") 
 st.markdown("") 
 
 
 features_with_links = [
-    ("📊", "Financial Advisor", "Get personalized financial advice.", "advisor"),
-    ("📚", "Lessons", "Enhance your financial knowledge.", "lessons"),
-    ("🛡️", "Finance Toolkit", "Your toolkit for smart decisions.", "finance_toolkit"),
-    ("📝", "Finance Quiz", "Test your financial knowledge.", "quiz"),
+    # ("📊", "Financial Advisor", "Get personalized financial advice.", "advisor"),
+    # ("📚", "Lessons", "Enhance your financial knowledge.", "lessons"),
+    # ("🛡️", "Finance Toolkit", "Your toolkit for smart decisions.", "finance_toolkit"),
+    # ("📝", "Finance Quiz", "Test your financial knowledge.", "quiz"),
     ("📰", "Finance News", "Stay updated on financial news.", "news"),
-    ("📖", "Finance Dictionary", "Easily look up financial terms.", "dictionary"),
+    # ("📖", "Finance Dictionary", "Easily look up financial terms.", "dictionary"),
     ("🤖", "AI Chatbot", "Chat with our AI financial assistant.", "chatbot"),
     ("💰", "Stock Analysis", "Monitor and analyze your savings.", "stock_analysis"),
 ]
@@ -296,9 +299,9 @@ features_with_links = [
 
 # Apply styling with Streamlit Extras
 with stylable_container("card_container", css_styles):
-    cols = st.columns(4)
+    cols = st.columns(3)
     for i, (icon, title, description, page) in enumerate(features_with_links):
-        with cols[i % 4]:
+        with cols[i % 3]:
             st.markdown(f"""
             <div class="card">
                 <div class="card-icon">{icon}</div>
@@ -315,6 +318,11 @@ with stylable_container("card_container", css_styles):
     
             st.markdown("") 
             st.markdown("") 
+            
+        
+            
+            
+
 
 
 
@@ -368,13 +376,13 @@ with faq_col1:
 
 with faq_col2:
     with st.expander("What is Financial Planning?"):
-        st.write("Financial planning involves setting financial goals and creating a roadmap to achieve them.")
+        st.write("Financial planning is the process of managing your money to achieve your short- and long-term financial goals. It includes budgeting, saving, investing, insurance, and planning for future needs like education or retirement. It helps you understand your current financial situation and create a strategy to improve it. Overall, financial planning ensures you use your resources wisely and stay financially secure.")
     with st.expander("How to start saving money?"):
-        st.write("Start by creating a budget, setting savings goals, and automating your savings.")
+        st.write("Start by tracking your income and expenses so you know where your money is going. Create a simple budget and set a small, realistic savings goal. Pay yourself first by automatically transferring a fixed amount into a savings account each month. Cut unnecessary expenses, like subscriptions you don’t use or frequent takeout. Gradually increase your savings as your habits improve.")
     with st.expander("What are the basics of investing?"):
-        st.write("Understand risk tolerance, diversify investments, and invest for the long term.")
+        st.write("The basics of investing start with understanding your financial goals and how much risk you can handle. You then choose where to invest—common options include stocks, bonds, mutual funds, and index funds. Diversification is key, meaning you spread your money across different assets to reduce risk. It’s also important to invest for the long term and stay consistent. Finally, learn how returns, risk, and time work together so you can make informed decisions.")
     with st.expander("How to detect a fraud scheme?"):
-        st.write("Be skeptical of unrealistic promises, avoid pressure tactics, and verify credentials.")
+        st.write("You can detect a fraud scheme by looking for red flags like promises of guaranteed or unusually high returns with little or no risk. Be cautious if you’re pressured to act quickly or if details are unclear or secretive. Verify the company’s licenses, reviews, and contact information from trusted sources. Avoid sharing personal or financial details unless you’re sure the organization is legitimate. Always trust your instincts— if something feels off, investigate further or walk away.")
 
 
 
@@ -387,17 +395,16 @@ st.markdown("<hr>", unsafe_allow_html=True)
 footer_col1, footer_col2 = st.columns(2)
 
 with footer_col1:
-    st.markdown("<h2>Join the FinFriend club today!</h2>", unsafe_allow_html=True)
+    st.markdown("<h2>Join the MoneyMentor club today!</h2>", unsafe_allow_html=True)
 
 with footer_col2:
     st.markdown("") 
     
     sac.segmented(
         items=[
-            sac.SegmentedItem(label='discord', icon='discord'),
-            sac.SegmentedItem(label='mail', icon='google'),
-            sac.SegmentedItem(label='github', icon='github'),
-        ], align='right', color='rgba(131, 158, 101, 0.8)'
+            sac.SegmentedItem(label='github', icon='github',href="https://github.com/JJFIREE/moneyMentor"),
+            sac.SegmentedItem(label='mail', icon='google',href="mailto:jai.aggarwal.ug22@nsut.ac.in"),
+        ], index=3, align='right',size='lg', color='rgba(131, 158, 101, 0.8)'
     )
 
 
@@ -410,14 +417,14 @@ def contact():
 def disclaimer():
     show_disclaimer()
 
-footer_col3, footer_col4 = st.columns(2)
-with footer_col3:
-    col1, col2, col3 = st.columns([1,1,1])
+# footer_col3, footer_col4 = st.columns(2)
+# with footer_col3:
+#     col1, col2 = st.columns([1,1])
 
-    with col1:
-        if st.button("Contact Us", key="contact_button"):
-            contact()
+#     # with col1:
+#     #     if st.button("Contact Us", key="contact_button"):
+#     #         contact()
     
-    with col2:
-        if st.button("Disclaimer", key="disclaimer_button"):
-            disclaimer()
+#     with col2:
+if st.button("Disclaimer", key="disclaimer_button"):
+    disclaimer()

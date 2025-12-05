@@ -16,6 +16,13 @@ from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 import altair as alt
 
+# --- RATE LIMIT FIX (Global Patch) ---
+import yfinance.utils
+# This overrides the User-Agent for the entire library to mimic a browser
+# It works without passing a 'session' object, preventing the crash you saw.
+yfinance.utils.get_user_agent = lambda: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+# -------------------------------------
+
 
 # # Configure logging for Prophet (optional, reduces verbose output)
 logging.getLogger('cmdstanpy').setLevel(logging.WARNING)
@@ -30,6 +37,7 @@ st.markdown("""
         }
 </style>
 """, unsafe_allow_html=True)
+
 
 # Function to get common currency symbols (add more as needed)
 def get_currency_symbol(currency_code):
@@ -431,4 +439,3 @@ else:
 # --- Disclaimer ---
 st.divider()
 st.caption("Disclaimer: Stock price forecasting is inherently uncertain. This tool provides model-based predictions based on historical data and should not be considered financial advice. Currency conversions use recent exchange rates and may introduce slight inaccuracies. Always conduct your own research.")
-
