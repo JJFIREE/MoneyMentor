@@ -387,28 +387,53 @@ def raise_detailed_error(request_object):
 ## Authentication functions ------------------------------------------------------------------------
 ## -------------------------------------------------------------------------------------------------
 
-def sign_in(email: str, password: str) -> None:
+def sign_in(email: str, password: str) -> bool:
     print("[sign_in] Start")
     try:
         # Attempt to sign in with email and password
-        id_token = sign_in_with_email_and_password(email, password)['idToken']
+        result = sign_in_with_email_and_password(email, password)
+        if not result or 'idToken' not in result:
+            st.session_state.auth_warning = 'Sign in failed: Invalid response'
+            return False
+            
+        id_token = result['idToken']
+        user_id = result.get('localId')
         print("[sign_in] Got id_token:", id_token)
+        print("[sign_in] Got user_id:", user_id)
 
         # Get account information
-        user_info = get_account_info(id_token)["users"][0]
+        account_info = get_account_info(id_token)
+        if not account_info or "users" not in account_info or not account_info["users"]:
+            st.session_state.auth_warning = 'Failed to get user information'
+            return False
+            
+        user_info = account_info["users"][0]
         print("[sign_in] user_info:", user_info)
 
         # If email is not verified, send verification email and do not sign in
-        if not user_info["emailVerified"]:
+        if not user_info.get("emailVerified", False):
             print("[sign_in] Email not verified, sending verification email")
             send_email_verification(id_token)
-            st.session_state.auth_warning = 'Check your email to verify your account'
+            st.session_state.auth_warning = 'Check your email to verify your account before signing in'
+            return False
 
         # Save user info to session state
-        else:
-            st.session_state.user_info = user_info
-            print("[sign_in] User signed in successfully")
-            # st.experimental_rerun()
+        st.session_state.user_info = user_info
+        st.session_state.user_id = user_id
+        st.session_state.id_token = id_token
+        st.session_state.is_authenticated = True
+        
+        # Ensure user profile exists in Firestore
+        user_profile = get_user_profile(user_id)
+        if not user_profile:
+            print("[sign_in] Creating user profile in Firestore...")
+            create_user_profile_in_firestore(user_id, email)
+            user_profile = get_user_profile(user_id)
+        
+        st.session_state.user_profile = user_profile
+        
+        print("[sign_in] User signed in successfully")
+        return True
 
     except requests.exceptions.HTTPError as error:
         error_message = json.loads(error.args[1])['error']['message']
@@ -416,30 +441,81 @@ def sign_in(email: str, password: str) -> None:
         if error_message in {"INVALID_EMAIL", "EMAIL_NOT_FOUND", "INVALID_PASSWORD", "MISSING_PASSWORD"}:
             st.session_state.auth_warning = 'Error: Use a valid email and password'
         else:
-            st.session_state.auth_warning = 'Error: Please try again later'
+            st.session_state.auth_warning = f'Error: {error_message}'
+        return False
 
     except Exception as error:
         print("[sign_in] Exception:", error)
         st.session_state.auth_warning = 'Error: Please try again later'
-
+        return False
+def get_user_profile(user_id):
+    """
+    Retrieve user profile from Firestore
+    """
+    global db
+    try:
+        print(f"[get_user_profile] Fetching profile for user_id: {user_id}")
+        
+        if db is None:
+            initialize_firebase_once()
+            
+        # Try UserProfiles collection first (your current structure)
+        user_ref = db.collection('UserProfiles').document(user_id)
+        user_doc = user_ref.get()
+        
+        if user_doc.exists:
+            user_data = user_doc.to_dict()
+            print(f"[get_user_profile] Profile found in UserProfiles: {user_data}")
+            return user_data
+        else:
+            # Try users collection (common structure)
+            user_ref = db.collection('users').document(user_id)
+            user_doc = user_ref.get()
+            
+            if user_doc.exists:
+                user_data = user_doc.to_dict()
+                print(f"[get_user_profile] Profile found in users: {user_data}")
+                return user_data
+            else:
+                print(f"[get_user_profile] No profile found for user_id: {user_id}")
+                return None
+            
+    except Exception as e:
+        print(f"[get_user_profile] Error: {str(e)}")
+        return None
 
 def create_account(email: str, password: str) -> bool:
     print("[create_account] Start")
     try:
         # Create account (and save id_token)
         response = create_user_with_email_and_password(email, password)
+        if not response:
+            st.session_state.auth_warning = 'Account creation failed: No response from server'
+            return False
+            
         print("[create_account] create_user response:", response)
+        
+        if 'idToken' not in response or 'localId' not in response:
+            st.session_state.auth_warning = 'Account creation failed: Invalid response'
+            return False
+            
         id_token = response['idToken']
         user_id = response['localId']  # Get the user ID (uid)
         print("[create_account] user_id:", user_id)
 
         # Create user profile in Firestore
-        create_user_profile_in_firestore(user_id, email)
+        profile_created = create_user_profile_in_firestore(user_id, email)
+        if not profile_created:
+            st.session_state.auth_warning = 'Account created but profile setup failed. Please try signing in.'
+            return False
+            
         print("[create_account] Firestore profile created")
 
         # Send email verification
         send_email_verification(id_token)
         print("[create_account] Verification email sent")
+        
+        st.session_state.auth_success = 'Account created successfully! Please check your email for verification.'
         return True
 
     except requests.exceptions.HTTPError as error:
@@ -448,15 +524,15 @@ def create_account(email: str, password: str) -> bool:
         if error_message == "EMAIL_EXISTS":
             st.session_state.auth_warning = 'Error: Email belongs to existing account'
         elif error_message in {"INVALID_EMAIL", "INVALID_PASSWORD", "MISSING_PASSWORD", "MISSING_EMAIL", "WEAK_PASSWORD"}:
-            st.error(error_message)
-            st.session_state.auth_warning = 'Error: Use a valid email and password'
+            st.session_state.auth_warning = f'Error: {error_message}'
         else:
-            st.session_state.auth_warning = 'Error: Please try again later'
+            st.session_state.auth_warning = f'Error: {error_message}'
+        return False
 
     except Exception as error:
         print("[create_account] Exception:", error)
         st.session_state.auth_warning = 'Error: Please try again later'
-
+        return False
 
 def reset_password(email: str) -> None:
     print("[reset_password] Start")
@@ -562,25 +638,50 @@ def initialize_firebase_once():
     else:
         print("[initialize_firebase_once] Firebase already initialized for session")
 
-from google.api_core.exceptions import DeadlineExceeded
+#from google.api_core.exceptions import DeadlineExceeded
 
-def create_user_profile_in_firestore(user_id, email):
+def create_user_profile_in_firestore(user_id, email, name="", currency="INR"):
+    """
+    Create a new user profile in Firestore
+    Returns True if successful, False otherwise
+    """
+    global db
     try:
         print(f"[create_user_profile_in_firestore] Start, user_id: {user_id}")
-        user_prof = db.collection('UserProfiles').document(user_id)
-        print("[create_user_profile_in_firestore] Document reference created")
         
-        # Increase timeout to 30 seconds
-        user_prof.set({
+        if db is None:
+            print("[create_user_profile_in_firestore] Firestore client not initialized, initializing now...")
+            initialize_firebase_once()
+            if db is None:
+                print("[create_user_profile_in_firestore] Fatal: Firestore still None, aborting profile creation")
+                return False
+
+        # Create comprehensive user profile data
+        user_profile_data = {
+            'user_id': user_id,
             'email': email,
+            'Name': name or email.split('@')[0],  # Use email username as default name
+            'currency': currency,
             'first_login': True,
-            'current_login': False,
-            'createdAt': firestore.SERVER_TIMESTAMP
-        }, timeout=30)
+            'current_login': True,
+            'createdAt': firestore.SERVER_TIMESTAMP,
+            'lastLogin': firestore.SERVER_TIMESTAMP,
+            'categories': ["Food", "Transport", "Entertainment", "Utilities", "Healthcare"],
+            'payment_methods': ["Cash", "Credit Card", "Debit Card", "UPI", "Bank Transfer"]
+        }
+
+        # Try to create in UserProfiles collection
+        user_prof_ref = db.collection('UserProfiles').document(user_id)
+        user_prof_ref.set(user_profile_data)
+        print("[create_user_profile_in_firestore] Firestore profile written successfully to UserProfiles")
         
-        print("[create_user_profile_in_firestore] Firestore profile written successfully")
+        # Also create in users collection for compatibility
+        users_ref = db.collection('users').document(user_id)
+        users_ref.set(user_profile_data)
+        print("[create_user_profile_in_firestore] Firestore profile written successfully to users")
         
-    except DeadlineExceeded:
-        print("[create_user_profile_in_firestore] Warning: Firestore write timed out, but account creation succeeded")
+        return True
+        
     except Exception as e:
-        print(f"[create_user_profile_in_firestore] Exception: {e}")
+        print(f"[create_user_profile_in_firestore] Exception during Firestore write: {e}")
+        return False

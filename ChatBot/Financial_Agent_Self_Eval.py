@@ -667,19 +667,34 @@ You are a financial analyst. Please answer the user's question based on what you
 
 # %%
 def answer_normal_query(state: State):
-    messages = state.get('messages', [])
-    system_message = SystemMessage(content=normal_query_prompt + "\nFormat your response in Markdown.")
-    response = llm_normal.invoke([system_message] + messages)
-    markdown_response = f"## Normal Query Response\n\n{response.content}"
+    """
+    Processes a normal finance query safely.
+    Ensures context is preserved and avoids fallback errors.
+    """
+    messages = state.get("messages", [])
+    original_messages = state.get("original_messages", [])
+
+    system_message = SystemMessage(
+        content=normal_query_prompt + "\nPlease answer fully in a financial context using Markdown."
+    )
+
+    try:
+        # Call the LLM
+        response = llm.invoke([system_message] + messages)
+        markdown_response = response.content.strip()
+    except Exception as e:
+        # Fallback if LLM fails
+        markdown_response = f"Error generating response: {str(e)}"
+
+    # Append the assistant response
+    new_messages = messages + [HumanMessage(content=markdown_response)]
+
     return {
         "running_summary": markdown_response,
-        "messages": [HumanMessage(content=markdown_response)],
-        "original_messages": state["original_messages"]  # Preserve original messages
+        "messages": new_messages,
+        "original_messages": original_messages
     }
-llm_financial_analysis = llm.bind_tools(finance_tools, tool_choice='auto')
-financial_analysis_prompt = """
-You are a financial analyst. You are given tools for accurate data.
-"""
+
 
 def call_llm(state: State):
     messages = state['messages']
@@ -847,8 +862,10 @@ def self_evaluate(input_text):
     Return a confidence score from 0-10 and a brief explanation.
     """
     
-    evaluation = llm.predict(evaluation_prompt)
+    evaluation_result = llm.invoke(evaluation_prompt)
+    evaluation = evaluation_result.content.strip()
     return evaluation
+
 
 def evaluate_response(state: State, config: RunnableConfig):
     query = state.get("research_topic", "")
@@ -892,13 +909,45 @@ def get_route(state: State) -> str:
     return state["route"]
 
 def call_route_first_step(state: State):
+    """
+    Safely determine the first routing step:
+    - Images go to Image_Analysis
+    - Plot-related queries go to Plot_Graph
+    - YouTube queries only if explicitly asking for videos
+    - All other finance queries go to Normal_query
+    """
     image_processed = state.get("image_processed", False)
+
+    # Route to Image_Analysis if an image exists and is unprocessed
     if state.get("image") and len(state["image"]) > 0 and not image_processed:
         return {"route": "Image_Analysis", "original_messages": state["original_messages"]}
-    
-    router_response = llm.with_structured_output(Route_First_Step).invoke(state["research_topic"])
-    print(f"Routing result: {router_response.step}")
-    return {"route": router_response.step, "original_messages": state["original_messages"]}
+
+    try:
+        # Try structured output from LLM
+        router_response = llm.with_structured_output(Route_First_Step).invoke(state["research_topic"])
+        route = getattr(router_response, "step", None)
+
+        # Fallback if LLM doesn't return a valid step
+        if not route:
+            query_lower = state["research_topic"].lower()
+
+            # Plot-related queries
+            if any(word in query_lower for word in ["chart", "candlestick", "balance sheet", "assets", "plot"]):
+                route = "Plot_Graph"
+            # YouTube queries only if explicitly asking for videos
+            elif any(word in query_lower for word in ["youtube", "video", "watch video"]):
+                route = "YouTube_Recommender"
+            # Everything else -> Normal finance query
+            else:
+                route = "Normal_query"
+
+        print(f"[Router] Determined route: {route}")
+        return {"route": route, "original_messages": state["original_messages"]}
+
+    except Exception as e:
+        # Any exception -> default to Normal_query
+        print("[Router Error]", e)
+        return {"route": "Normal_query", "original_messages": state["original_messages"]}
 
 def validate_state_transition(old_state: State, new_state: State):
     required_fields = set(State.__annotations__.keys())
@@ -991,11 +1040,10 @@ def call_gemma3(state: State):
 
 # %%
 def process_with_context(state: State):
-    """Node for processing queries with conversation context"""
     messages = state.get("messages", [])
     original_messages = state.get("original_messages", [])
     
-    if len(messages) <= 1:  # Only the current message, no context
+    if len(messages) <= 1:
         return state
     
     # Last message is the current query

@@ -1,7 +1,11 @@
 import streamlit as st
 from auth_functions import *
 
+# Initialize Firebase
 initialize_firebase_once()
+
+# Get the db reference from auth_functions
+from auth_functions import db
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ FUNCTIONS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -17,19 +21,7 @@ def rate_us_button():
     return
 
 
-def get_user_profile(user_id):
-    """Fetches the user's profile from Firestore using their user ID."""
-    if db is None:
-        st.error("Database not initialized.")
-        return None
 
-    doc_ref = db.collection("UserData").document(user_id)
-    doc = doc_ref.get()
-
-    if doc.exists:
-        user_data = doc.to_dict()
-        return user_data  # Return the full profile dictionary
-    return None  # Return None if the user profile is not found
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MAIN APP ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -68,23 +60,52 @@ st.markdown("""
 
 
 if 'user_info' in st.session_state:
-    # initialize_firebase()
     user_info = st.session_state.user_info
-    user_id = user_info['localId']  # Get the user ID from session state
+    user_id = user_info.get('localId')  # Use .get() for safer access
     st.session_state.user_id = user_id
-    # print("USER ID: ",user_id)
+    
+    # Debug print
+    print(f"[app.py] User ID from session: {user_id}")
+    
     nav_login = []
 
     st.markdown("")
     st.markdown("")
 
-    user_id = st.session_state.user_id  # Get the user ID
-    user_profile = get_user_profile(user_id)  # Fetch profile data
+    # Get user profile using the function from auth_functions
+    user_profile = get_user_profile(user_id)
+    print(f"[app.py] User profile retrieved: {user_profile is not None}")
 
+    # Safe user name handling
+    user_name = "User"  # Default value
+    
     if user_profile:
-        user_name = user_profile.get("Name", "User")  # Default to "User" if name is missing
+        # Safely get user name with multiple fallbacks
+        user_name = user_profile.get("Name") 
+        if not user_name and user_profile.get("email"):
+            user_name = user_profile.get("email", "").split("@")[0]
+        user_name = user_name or "User"
     else:
-        user_name = "User"
+        print(f"[app.py] Warning: No user profile found for user_id {user_id}, creating new profile in Firestore...")
+        # Create a default profile if not exists
+        user_email = st.session_state.user_info.get("email", "unknown@user.com")
+        profile_created = create_user_profile_in_firestore(user_id, user_email)
+        
+        if profile_created:
+            # Get the newly created profile
+            user_profile = get_user_profile(user_id)
+            if user_profile:
+                user_name = user_profile.get("Name") or user_profile.get("email", "").split("@")[0] or "User"
+            else:
+                user_name = user_email.split("@")[0] if user_email else "User"
+        else:
+            user_name = user_email.split("@")[0] if user_email else "User"
+            st.error("Failed to create user profile. Some features may not work properly.")
+    
+    # Store user_profile in session state for other pages to use
+    st.session_state.user_profile = user_profile
+    print(f"[app.py] Final user_name: {user_name}")
+
 
     with st.sidebar:
         st.markdown(f"<h4 style='text-align: center;'>Welcome, {user_name}! 🎉</h4>", unsafe_allow_html=True)
