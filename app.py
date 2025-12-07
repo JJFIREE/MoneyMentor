@@ -112,16 +112,16 @@ if 'user_info' in st.session_state:
         nav_login = st.navigation(
             [
                 st.Page("user_pages/dashboard.py", title="Dashboard", default=True),
-                st.Page("user_pages/advisor.py", title="Finanace Advisor"),
-                st.Page("user_pages/lessons.py", title=" Finance Lessons"),
-                st.Page("user_pages/finance_toolkit.py", title="Financial Tools"),
-                st.Page("user_pages/quiz.py", title="Quiz"),
+                # st.Page("user_pages/advisor.py", title="Finanace Advisor"),
+                # st.Page("user_pages/lessons.py", title=" Finance Lessons"),
+                # st.Page("user_pages/finance_toolkit.py", title="Financial Tools"),
+                # st.Page("user_pages/quiz.py", title="Quiz"),
                 st.Page("user_pages/news.py", title="News"),
-                st.Page("user_pages/dictionary.py", title="Dictionary"),
+                # st.Page("user_pages/dictionary.py", title="Dictionary"),
                 st.Page("user_pages/chatbot.py", title="Chatbot"),
-                st.Page("user_pages/savings_tracker.py", title="Savings"),
+                # st.Page("user_pages/savings_tracker.py", title="Savings"),
                 st.Page("user_pages/stock_analysis.py", title="Stock Analysis"),
-                st.Page("user_pages/discussion_forum.py", title = "Discussion Forum"),
+                # st.Page("user_pages/discussion_forum.py", title = "Discussion Forum"),
                 st.Page("user_options/profile_entry.py", title="Profile"),
                 # st.Page("user_pages/contact.py", title="Contact Us"),
             ]
@@ -160,9 +160,9 @@ else:
         st.markdown("")
         st.markdown("")
         st.markdown("")
-        st.markdown("<h1 style='text-align: right; font-size: 70px; font-weight: bold;'>WELCOME TO MONEYMENTOR</h1>", unsafe_allow_html=True)
+        st.markdown("<h1 style='text-align: center; font-size: 50px; font-weight: bold;'>WELCOME TO MONEYMENTOR</h1>", unsafe_allow_html=True)
         st.markdown("""
-        <div style="text-align: right; margin-top: 20px;">
+        <div style="text-align: center; margin-top: 20px;">
             <p>Discover tools, resources, and advice to make informed financial decisions.</p>
             <p>Explore personalized financial advice, track savings, analyse stocks, and more.</p>
         </div>
