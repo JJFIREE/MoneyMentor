@@ -193,7 +193,7 @@ st.markdown(
     <div style='text-align:center; margin-bottom: 1rem;'>
         <h1 style='margin:0; font-size:38px;'>📈 Finance ChatBot</h1>
         <div style='color:var(--text-secondary); margin-top:6px;'>
-            Meet your <strong>FinFriend</strong> — ask about markets, upload charts, or get financial insights.
+            Meet your <strong>MoneyMentor</strong> — ask about markets, upload charts, or get financial insights.
         </div>
     </div>
     """,

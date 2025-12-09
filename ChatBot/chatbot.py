@@ -1356,7 +1356,7 @@ class FinancialChatBot:
                 plot_json = None
 
         except Exception as e:
-            text_response = f"I apologize, but I encountered an error while processing your request: {str(e)}"
+            text_response = f"{str(e)}"
             plot_json = None
 
         # -----------------------------
