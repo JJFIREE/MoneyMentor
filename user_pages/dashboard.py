@@ -160,12 +160,12 @@ css_styles="""
 
 
 features = [
-    # ("📊", "Financial Advisor", "Get personalized financial advice."),
-    # ("📚", "Lessons", "Enhance your financial knowledge."),
-    # ("🛡️", "Finance Toolkit", "Your toolkit for smart decisions."),
-    # ("📝", "Finance Quiz", "Test your financial knowledge."),
+    ("📊", "Financial Advisor", "Get personalized financial advice."),
+    ("📚", "Lessons", "Enhance your financial knowledge."),
+    ("🛡️", "Finance Toolkit", "Your toolkit for smart decisions."),
+    ("📝", "Finance Quiz", "Test your financial knowledge."),
     ("📰", "Finance News", "Stay updated on financial news."),
-    # ("📖", "Finance Dictionary", "Easily look up financial terms."),
+    ("📖", "Finance Dictionary", "Easily look up financial terms."),
     ("🤖", "AI Chatbot", "Chat with our AI financial assistant."),
     ("💰", "Stock Analysis", "Monitor and analyze your savings."),
 ]
@@ -188,7 +188,7 @@ if 'user_info' not in st.session_state:
             if st.button(" 🚀 Get Started", use_container_width=True, type='primary'):
                 st.switch_page("user_options/login_pg.py")
 
-    cols = st.columns(3)
+    cols = st.columns(4)
 
     
     with stylable_container("card_container", css_styles):
@@ -252,7 +252,7 @@ st.markdown("")
 
 user_input = st.text_input("🔍 Ask us anything:", placeholder="What is the best long term investment...")
 
-cols = st.columns([1,5])
+cols = st.columns([1,10])
 # Store user input in session state
 with cols[0]:
     if st.button("Search"):
@@ -286,12 +286,12 @@ st.markdown("")
 
 
 features_with_links = [
-    # ("📊", "Financial Advisor", "Get personalized financial advice.", "advisor"),
-    # ("📚", "Lessons", "Enhance your financial knowledge.", "lessons"),
-    # ("🛡️", "Finance Toolkit", "Your toolkit for smart decisions.", "finance_toolkit"),
-    # ("📝", "Finance Quiz", "Test your financial knowledge.", "quiz"),
+    ("📊", "Financial Advisor", "Get personalized financial advice.", "advisor"),
+    ("📚", "Lessons", "Enhance your financial knowledge.", "lessons"),
+    ("🛡️", "Finance Toolkit", "Your toolkit for smart decisions.", "finance_toolkit"),
+    ("📝", "Finance Quiz", "Test your financial knowledge.", "quiz"),
     ("📰", "Finance News", "Stay updated on financial news.", "news"),
-    # ("📖", "Finance Dictionary", "Easily look up financial terms.", "dictionary"),
+    ("📖", "Finance Dictionary", "Easily look up financial terms.", "dictionary"),
     ("🤖", "AI Chatbot", "Chat with our AI financial assistant.", "chatbot"),
     ("💰", "Stock Analysis", "Monitor and analyze your savings.", "stock_analysis"),
 ]
@@ -299,9 +299,9 @@ features_with_links = [
 
 # Apply styling with Streamlit Extras
 with stylable_container("card_container", css_styles):
-    cols = st.columns(3)
+    cols = st.columns(4)
     for i, (icon, title, description, page) in enumerate(features_with_links):
-        with cols[i % 3]:
+        with cols[i % 4]:
             st.markdown(f"""
             <div class="card">
                 <div class="card-icon">{icon}</div>
@@ -417,14 +417,14 @@ def contact():
 def disclaimer():
     show_disclaimer()
 
-# footer_col3, footer_col4 = st.columns(2)
-# with footer_col3:
-#     col1, col2 = st.columns([1,1])
+footer_col3, footer_col4 = st.columns(2)
+with footer_col3:
+    col1, col2 = st.columns([1,1])
 
-#     # with col1:
-#     #     if st.button("Contact Us", key="contact_button"):
-#     #         contact()
+    with col1:
+        if st.button("Contact Us", key="contact_button"):
+            contact()
     
-#     with col2:
-if st.button("Disclaimer", key="disclaimer_button"):
-    disclaimer()
+    with col2:
+        if st.button("Disclaimer", key="disclaimer_button"):
+            disclaimer()
