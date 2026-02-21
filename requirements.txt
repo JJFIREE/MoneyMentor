@@ -46,7 +46,6 @@ Faker==37.1.0
 favicon==0.7.0
 filelock==3.18.0
 firebase-admin==6.7.0
-fitz==0.0.1.dev2
 fonttools==4.56.0
 frozendict==2.4.6
 frozenlist==1.5.0
@@ -173,7 +172,6 @@ pydot==3.0.4
 Pygments==2.19.1
 PyJWT==2.10.1
 pymdown-extensions==10.14.3
-PyMuPDF==1.25.4
 pyparsing==3.2.1
 PySocks==1.7.1
 python-dateutil==2.9.0.post0

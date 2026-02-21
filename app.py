@@ -122,8 +122,7 @@ if 'user_info' in st.session_state:
                 st.Page("user_pages/savings_tracker.py", title="Savings"),
                 st.Page("user_pages/stock_analysis.py", title="Stock Analysis"),
                 st.Page("user_pages/discussion_forum.py", title = "Discussion Forum"),
-                st.Page("user_options/profile_entry.py", title="Profile"),
-                st.Page("user_pages/contact.py", title="Contact Us"),
+                st.Page("user_options/profile_entry.py", title="Profile")
             ]
         )
 

@@ -43,21 +43,21 @@ def load_finance_dictionary():
 def generate_simple_explanation(term):
     with st.spinner(f'Generating simple explanation for "{term}"...'):
         prompt = f"The term is: {term}. Explain it in simple words that a high school student could understand. Keep it under 3 sentences."
-        model = genai.GenerativeModel("gemini-2.0-flash")
+        model = genai.GenerativeModel("gemini-2.5-flash-lite")
         response = model.generate_content(prompt)
         return response.text if response else "I couldn't simplify this term."
 
 def generate_proper_explanation(term):
     with st.spinner(f'Generating formal definition for "{term}"...'):
         prompt = f"The term is: {term}. Provide a concise but comprehensive financial dictionary definition."
-        model = genai.GenerativeModel("gemini-2.0-flash")
+        model = genai.GenerativeModel("gemini-2.5-flash-lite")
         response = model.generate_content(prompt)
         return response.text if response else "I couldn't explain this term."
 
 def generate_related_terms(term):
     with st.spinner(f'Finding related terms for "{term}"...'):
         prompt = f"Generate 4 closely related financial terms to '{term}'. Provide only the terms separated by commas, no explanations."
-        model = genai.GenerativeModel("gemini-2.0-flash")
+        model = genai.GenerativeModel("gemini-2.5-flash")
         try:
             response = model.generate_content(prompt)
             if response:

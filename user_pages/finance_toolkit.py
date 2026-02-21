@@ -160,7 +160,7 @@ if st.session_state.active_tab == 'schemes':
                     "5. Official link (if available)"
                 )
                 
-                model = genai.GenerativeModel("gemini-2.0-flash")
+                model = genai.GenerativeModel("gemini-2.5-flash")
                 response = model.generate_content(query)
                 schemes = response.text
 
@@ -201,23 +201,106 @@ else:
 
         if st.button("🔎 Check Legitimacy", use_container_width=True, type="primary"):
             with st.spinner("Analyzing..."):
-                query = f"Is '{scheme_name}' a legitimate investment scheme in India? It promises {promised_returns} returns with a minimum investment of ₹{minimum_investment}. The company details are: {company_info}. Provide a scam risk assessment."
-                model = genai.GenerativeModel("gemini-2.0-flash")
+                query = f"""You are a financial analyst. Analyze this investment scheme objectively:
+
+Scheme Name: {scheme_name}
+Promised Returns: {promised_returns}
+Minimum Investment: ₹{minimum_investment}
+Company Details: {company_info}
+
+CLASSIFICATION RULES (Follow strictly):
+
+LEGITIMATE - Use for:
+- Government schemes: PPF, NSC, SSY, SCSS, KVP, Post Office schemes
+- Bank Fixed Deposits from scheduled banks
+- Government bonds and treasury bills
+- Registered mutual funds from SEBI-registered AMCs
+- Insurance products from IRDAI-registered companies
+- Returns: 4-12% annually
+
+LOW RISK - Use for:
+- Corporate bonds from reputed companies
+- Debt mutual funds
+- Returns: 8-15% annually
+
+MEDIUM RISK - Use for:
+- Equity mutual funds
+- Stocks from established companies
+- Real estate from known developers
+- Returns: 12-18% annually (variable)
+
+HIGH RISK - Use for:
+- Unregistered investment schemes
+- New/unknown companies
+- Returns: 18-30% annually
+- Lack of regulatory approval
+
+LIKELY SCAM - Use for:
+- Returns >30% annually or >2% monthly
+- Pyramid/MLM structure
+- Pressure to invest immediately
+- No SEBI/RBI/government registration
+- Promises of "guaranteed" high returns
+
+Now analyze and respond in this format:
+
+RISK LEVEL: [Choose ONE based on rules above]
+
+Analysis:
+[Your reasoning]
+
+Red Flags:
+[List any, or write "None - This is a legitimate/regulated scheme"]
+
+Recommendations:
+[Advice for investor]"""
+
+                model = genai.GenerativeModel("gemini-3-flash-preview")
                 response = model.generate_content(query)
                 result = response.text
 
-                if "scam" in result.lower() or "high risk" in result.lower():
-                    st.error(f"""
-                    Warning: Potential Scam Detected!
-                    {result}
-                    """)
-                else:
-                    st.success(f"""
-                    <div class="scheme-card">
-                        <h3>✅ This scheme appears legitimate</h3>
-                        <p>{result}</p>
+                # Better detection logic - check for risk level in the response
+                result_upper = result.upper()
+                
+                if "LIKELY SCAM" in result_upper:
+                    st.error("🚨 Warning: Likely Scam Detected!")
+                    st.markdown(f"""
+                    <div class="warning-card">
+                        {result}
                     </div>
                     """, unsafe_allow_html=True)
+                elif "HIGH RISK" in result_upper:
+                    st.error("⚠️ Warning: High Risk Investment!")
+                    st.markdown(f"""
+                    <div class="warning-card">
+                        {result}
+                    </div>
+                    """, unsafe_allow_html=True)
+                elif "MEDIUM RISK" in result_upper:
+                    st.warning("⚠️ Caution: Medium Risk Investment")
+                    st.markdown(f"""
+                    <div class="scheme-card">
+                        {result}
+                    </div>
+                    """, unsafe_allow_html=True)
+                elif "LOW RISK" in result_upper:
+                    st.success("✅ Low Risk - Appears Safe")
+                    st.markdown(f"""
+                    <div class="scheme-card">
+                        {result}
+                    </div>
+                    """, unsafe_allow_html=True)
+                elif "LEGITIMATE" in result_upper:
+                    st.success("✅ Legitimate Scheme")
+                    st.markdown(f"""
+                    <div class="scheme-card">
+                        {result}
+                    </div>
+                    """, unsafe_allow_html=True)
+                else:
+                    # Fallback if format not followed
+                    st.info("📊 Analysis Complete")
+                    st.markdown(result)
 
                 st.markdown("""
                 <div class="scheme-card">

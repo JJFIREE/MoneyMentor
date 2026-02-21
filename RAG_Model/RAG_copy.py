@@ -1,24 +1,17 @@
-import fitz  
-from langchain_community.embeddings import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
-
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.tools import Tool
-from langchain.chains import RetrievalQA
 from langchain_groq import ChatGroq
-from langchain.agents import initialize_agent, Tool, AgentType
-from langchain_community.tools.tavily_search import TavilySearchResults
-from langchain.memory import ConversationBufferMemory
 from langchain_community.embeddings import HuggingFaceEmbeddings
-
-
 
 import os
 from dotenv import load_dotenv
-import json
-import torch
-torch.classes.__path__ = []
 import streamlit as st
+
+# Torch import with error handling
+try:
+    import torch
+    torch.classes.__path__ = []
+except Exception:
+    pass  # Torch might not be needed for basic functionality
 
 def get_chapter_path(chapter_key):
     chapter_list = [r'RAG_Model/faiss_indexes/faiss_index_chapter_1',
@@ -32,11 +25,24 @@ def get_chapter_path(chapter_key):
 
 load_dotenv()
 FAISS_INDEX_FOLDER = "faiss_indexes"
+
+# Cache the embeddings model to avoid reloading
+@st.cache_resource
+def get_embeddings_model():
+    """Load and cache the embeddings model"""
+    try:
+        embeddings_model = HuggingFaceEmbeddings(
+            model_name="jinaai/jina-embeddings-v2-base-en",
+            model_kwargs={'device': 'cpu'}
+        )
+        return embeddings_model
+    except Exception as e:
+        raise Exception(f"Failed to load embeddings model: {str(e)}")
+
+@st.cache_resource
 def load_chapter_vectorstore(chapter):
-    embeddings_model = HuggingFaceEmbeddings(
-    model_name="jinaai/jina-embeddings-v2-base-en",
-    model_kwargs={'device': 'cpu'}  # Use 'cuda' if you have GPU
-    )
+    """Load and cache the FAISS vectorstore for a chapter"""
+    embeddings_model = get_embeddings_model()
     chapter_key = chapter.lower().replace(":", "").replace(" ", "_")
     index_path = get_chapter_path(chapter_key)
 
@@ -65,8 +71,13 @@ def retrieve_chapter_topic(chapter, topic):
 # %%
 
 def teach_topic_with_quiz(chapter, topic, year):
-    llm = ChatGroq(model="llama3-8b-8192", api_key = st.secrets.REST.GROQ_API_KEY)
+    llm = ChatGroq(model="llama-3.1-8b-instant", api_key=st.secrets["REST"]["GROQ_API_KEY"])
     docs = retrieve_chapter_topic(chapter, topic)
+    
+    # Check if docs contains an error message
+    if docs and isinstance(docs[0], str):
+        raise Exception(docs[0])
+    
     source_text = "\n".join([doc.page_content for doc in docs])
 
     teaching_prompt = f"""

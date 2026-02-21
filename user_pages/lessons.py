@@ -1,5 +1,14 @@
 import streamlit as st
-from RAG_Model.RAG_copy import get_teaching_response_with_quiz
+
+# Add error handling for imports
+try:
+    from RAG_Model.RAG_copy import get_teaching_response_with_quiz
+except ImportError as e:
+    st.error(f"Failed to import RAG model: {e}")
+    st.stop()
+except Exception as e:
+    st.error(f"Error during import: {e}")
+    st.stop()
 
 # CSS Styling (keeping your original styles but adding improvements)
 st.markdown("""
@@ -369,8 +378,15 @@ if generate_btn:
                 st.markdown("### ❓ Quiz")
                 st.markdown(f'<div class="quiz-container">{quiz_content}</div>', unsafe_allow_html=True)
                 
+        except KeyError as e:
+            st.error(f"⚠️ Configuration Error: Missing API key or secret - {str(e)}")
+            st.info("Please check your .streamlit/secrets.toml file and ensure GROQ_API_KEY is properly configured.")
+        except FileNotFoundError as e:
+            st.error(f"⚠️ File Error: Required index files not found - {str(e)}")
+            st.info("Please ensure FAISS index files exist in RAG_Model/faiss_indexes/")
         except Exception as e:
             st.error(f"⚠️ Error generating content: {str(e)}")
+            st.exception(e)  # This will show the full traceback in development
 else:
     st.markdown("""
         <div style='text-align: center; margin: 3rem 0; color: #7f8c8d;'>
