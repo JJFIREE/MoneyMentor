@@ -160,12 +160,12 @@ css_styles="""
 
 
 features = [
-    ("📊", "Financial Advisor", "Get personalized financial advice."),
     ("📚", "Lessons", "Enhance your financial knowledge."),
-    ("🛡️", "Finance Toolkit", "Your toolkit for smart decisions."),
-    ("📝", "Finance Quiz", "Test your financial knowledge."),
-    ("📰", "Finance News", "Stay updated on financial news."),
     ("📖", "Finance Dictionary", "Easily look up financial terms."),
+    ("📝", "Finance Quiz", "Test your financial knowledge."),
+    ("📊", "Portfolio Recommender", "Get personalized financial advice."),
+    ("🛡️", "Finance Defender", "Get Govt schemes and fraud detection"),
+    ("📰", "Finance News", "Stay updated on financial news."),
     ("🤖", "AI Chatbot", "Chat with our AI financial assistant."),
     ("💰", "Stock Analysis", "Monitor and analyze your savings."),
 ]
@@ -286,12 +286,12 @@ st.markdown("")
 
 
 features_with_links = [
-    ("📊", "Financial Advisor", "Get personalized financial advice.", "advisor"),
     ("📚", "Lessons", "Enhance your financial knowledge.", "lessons"),
-    ("🛡️", "Finance Toolkit", "Your toolkit for smart decisions.", "finance_toolkit"),
-    ("📝", "Finance Quiz", "Test your financial knowledge.", "quiz"),
-    ("📰", "Finance News", "Stay updated on financial news.", "news"),
     ("📖", "Finance Dictionary", "Easily look up financial terms.", "dictionary"),
+    ("📰", "Finance News", "Stay updated on financial news.", "news"),
+    ("📊", "Portfolio Recommender", "Get personalized financial advice.", "advisor"),
+    ("🛡️", "Finance Defender", "Get Govt schemes and fraud detection", "finance_toolkit"),
+    ("📝", "Finance Quiz", "Test your financial knowledge.", "quiz"),
     ("🤖", "AI Chatbot", "Chat with our AI financial assistant.", "chatbot"),
     ("💰", "Stock Analysis", "Monitor and analyze your savings.", "stock_analysis"),
 ]

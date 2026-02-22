@@ -112,9 +112,9 @@ if 'user_info' in st.session_state:
         nav_login = st.navigation(
             [
                 st.Page("user_pages/dashboard.py", title="Dashboard", default=True),
-                st.Page("user_pages/advisor.py", title="Finanace Advisor"),
+                st.Page("user_pages/advisor.py", title="Portfolio Recommender"),
                 st.Page("user_pages/lessons.py", title=" Finance Lessons"),
-                st.Page("user_pages/finance_toolkit.py", title="Financial Tools"),
+                st.Page("user_pages/finance_toolkit.py", title="Finance Defender"),
                 st.Page("user_pages/quiz.py", title="Quiz"),
                 st.Page("user_pages/news.py", title="News"),
                 st.Page("user_pages/dictionary.py", title="Dictionary"),

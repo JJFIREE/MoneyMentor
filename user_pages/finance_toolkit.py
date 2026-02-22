@@ -152,6 +152,9 @@ if st.session_state.active_tab == 'schemes':
                 query = (
                     f"Suggest government schemes in India for a {category} person aged {age} "
                     f"with an annual income of ₹{income}. They are {employment} and interested in {sector}. "
+                    "The schemes should be PPF, NSC, SSY, SCSS, KVP, Post Office schemes"
+                    "If are mutual funds, then they should be registered mutual funds from SEBI-registered AMCs"
+                    "Insurance products should be from IRDAI-registered companies"
                     "Provide eligibility details and official links. Format each scheme with: "
                     "1. Scheme Name (bold heading) \n"
                     "2. Brief description \n"
