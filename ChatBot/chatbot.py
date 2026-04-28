@@ -696,7 +696,7 @@ class SearchAPI(Enum):
     TAVILY = "tavily"
     DUCKDUCKGO = "duckduckgo"
 
-@dataclass(kw_only=True)
+@dataclass
 class Configuration:
     max_web_research_loops: int = 3
     search_api: SearchAPI = SearchAPI.TAVILY
