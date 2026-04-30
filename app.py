@@ -112,16 +112,16 @@ if 'user_info' in st.session_state:
         nav_login = st.navigation(
             [
                 st.Page("user_pages/dashboard.py", title="Dashboard", default=True),
-                st.Page("user_pages/advisor.py", title="Portfolio Recommender"),
-                st.Page("user_pages/lessons.py", title=" Finance Lessons"),
-                st.Page("user_pages/finance_toolkit.py", title="Finance Defender"),
-                st.Page("user_pages/quiz.py", title="Quiz"),
-                st.Page("user_pages/news.py", title="News"),
-                st.Page("user_pages/dictionary.py", title="Dictionary"),
-                st.Page("user_pages/chatbot.py", title="Chatbot"),
-                st.Page("user_pages/savings_tracker.py", title="Savings"),
-                st.Page("user_pages/stock_analysis.py", title="Stock Analysis"),
+                # st.Page("user_pages/advisor.py", title="Portfolio Recommender"),
                 st.Page("user_pages/stock_recommender.py", title="Stock Recommender"),
+                st.Page("user_pages/lessons.py", title=" Finance Lessons"),
+                # st.Page("user_pages/finance_toolkit.py", title="Finance Defender"),
+                st.Page("user_pages/quiz.py", title="Quiz"),
+                # st.Page("user_pages/news.py", title="News"),
+                # st.Page("user_pages/dictionary.py", title="Dictionary"),
+                st.Page("user_pages/chatbot.py", title="Chatbot"),
+                # st.Page("user_pages/savings_tracker.py", title="Savings"),
+                # st.Page("user_pages/stock_analysis.py", title="Stock Analysis"),
                 st.Page("user_pages/discussion_forum.py", title = "Discussion Forum"),
                 st.Page("user_options/profile_entry.py", title="Profile")
             ]

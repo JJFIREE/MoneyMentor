@@ -161,13 +161,8 @@ css_styles="""
 
 features = [
     ("📚", "Lessons", "Enhance your financial knowledge."),
-    ("📖", "Finance Dictionary", "Easily look up financial terms."),
     ("📝", "Finance Quiz", "Test your financial knowledge."),
-    ("📊", "Portfolio Recommender", "Get personalized financial advice."),
-    ("🛡️", "Finance Defender", "Get Govt schemes and fraud detection"),
-    ("📰", "Finance News", "Stay updated on financial news."),
-    ("🤖", "AI Chatbot", "Chat with our AI financial assistant."),
-    ("💰", "Stock Analysis", "Monitor and analyze your savings."),
+    ("📊", "Stock Recommender", "Get personalized financial advice."),
 ]
 
 
@@ -188,14 +183,14 @@ if 'user_info' not in st.session_state:
             if st.button(" 🚀 Get Started", use_container_width=True, type='primary'):
                 st.switch_page("user_options/login_pg.py")
 
-    cols = st.columns(4)
+    cols = st.columns(3)
 
     
     with stylable_container("card_container", css_styles):
         
         # Loop through features and display each card
         for i, (icon, title, description) in enumerate(features):
-            with cols[i % 4]:
+            with cols[i % 3]:
                 st.markdown("")
                 st.markdown("")
                 st.markdown("")
@@ -287,21 +282,16 @@ st.markdown("")
 
 features_with_links = [
     ("📚", "Lessons", "Enhance your financial knowledge.", "lessons"),
-    ("📖", "Finance Dictionary", "Easily look up financial terms.", "dictionary"),
-    ("📰", "Finance News", "Stay updated on financial news.", "news"),
-    ("📊", "Portfolio Recommender", "Get personalized financial advice.", "advisor"),
-    ("🛡️", "Finance Defender", "Get Govt schemes and fraud detection", "finance_toolkit"),
     ("📝", "Finance Quiz", "Test your financial knowledge.", "quiz"),
-    ("🤖", "AI Chatbot", "Chat with our AI financial assistant.", "chatbot"),
-    ("💰", "Stock Analysis", "Monitor and analyze your savings.", "stock_analysis"),
+    ("📊", "Stock Recommender", "Get personalized financial advice.", "stock_recommender"),
 ]
 
 
 # Apply styling with Streamlit Extras
 with stylable_container("card_container", css_styles):
-    cols = st.columns(4)
+    cols = st.columns(3)
     for i, (icon, title, description, page) in enumerate(features_with_links):
-        with cols[i % 4]:
+        with cols[i % 3]:
             st.markdown(f"""
             <div class="card">
                 <div class="card-icon">{icon}</div>
@@ -311,7 +301,7 @@ with stylable_container("card_container", css_styles):
             """, unsafe_allow_html=True)
             st.markdown("")
 
-            if st.button(f"Open", key=f"button_{i}"):
+            if st.button(f"Open", key=f"button_{i}", use_container_width=True):
                 st.switch_page(f"user_pages/{page}.py")
                 st.rerun()
             # Use page switch functionality for navigation
